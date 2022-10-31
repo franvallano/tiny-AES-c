@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <sys/time.h>
 
 // Enable ECB, CTR and CBC mode. Note this can be done before including aes.h or at compile-time.
 // E.g. with GCC by using the -D flag: gcc -c aes.c -DCBC=0 -DCTR=1 -DECB=1
@@ -20,17 +21,23 @@ static int test_encrypt_ecb(void);
 static int test_decrypt_ecb(void);
 static void test_encrypt_ecb_verbose(void);
 
+struct timeval start1,stop1, start2, stop2, start3, stop3;
 
 int main(void)
 {
     int exit;
 
+    double secs = 0;
+
 #if defined(AES256)
     printf("\nTesting AES256\n\n");
+    gettimeofday(&start1, NULL);
 #elif defined(AES192)
     printf("\nTesting AES192\n\n");
+    gettimeofday(&start2, NULL);
 #elif defined(AES128)
     printf("\nTesting AES128\n\n");
+    gettimeofday(&start3, NULL);
 #else
     printf("You need to specify a symbol between AES128, AES192 or AES256. Exiting");
     return 0;
@@ -40,6 +47,22 @@ int main(void)
 	test_encrypt_ctr() + test_decrypt_ctr() +
 	test_decrypt_ecb() + test_encrypt_ecb();
     test_encrypt_ecb_verbose();
+
+#if defined(AES256)
+    printf("\nTesting AES256\n\n");
+    gettimeofday(&stop1, NULL);
+    secs = (double)(stop1.tv_usec - start1.tv_usec) / 1000000 + (double)(stop1.tv_sec - start1.tv_sec);
+#elif defined(AES192)
+    printf("\nTesting AES192\n\n");
+    gettimeofday(&stop2, NULL);
+    secs = (double)(stop2.tv_usec - start2.tv_usec) / 1000000 + (double)(stop2.tv_sec - start2.tv_sec);
+#elif defined(AES128)
+    printf("\nTesting AES128\n\n");
+    gettimeofday(&stop3, NULL);
+    secs = (double)(stop3.tv_usec - start3.tv_usec) / 1000000 + (double)(stop3.tv_sec - start3.tv_sec);
+#endif
+
+    printf("time taken %f\n",secs);
 
     return exit;
 }
@@ -312,5 +335,3 @@ static int test_decrypt_ecb(void)
 	return(1);
     }
 }
-
-
